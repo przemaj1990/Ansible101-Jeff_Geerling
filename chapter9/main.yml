@@ -1,0 +1,90 @@
+---
+- hosts: redhat8
+  become: true
+
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: sshd
+        state: restarted
+
+  tasks:
+    - name: Tell SELinux about ssh new port.
+      seport:
+        ports: 2849
+        proto: tcp
+        setype: ssh_port_t
+        state: present
+
+    - name: Make sure ssh is more secure.
+      lineinfile:
+        dest: /etc/ssh/ssh_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        validate: 'sshd -T -f %s'
+      with_items:
+        - regexp: "^PasswordAuthentication"
+          line: "PasswordAuthentication no"
+        - regexp: "^PermitRootLogin"
+          line: "PermitRootLogin no"
+        - regexp: "^Port"
+          line: "Port 2849"
+      notify: restart ssh
+
+    - name: Add user johndoe.
+      user:
+        name: johndoe
+        group: wheel
+
+    - name: Remove unused package.
+      package:
+        name:
+          - httpd
+          - nano
+          - mailutils
+        state: absent
+
+    - name: Edit file permission.
+      file:
+        path: '/etc/ssh/sshd_config'
+        mode: 0600
+
+    # - name: Make sure everything is up to date.
+    #   yum:
+    #     name: '*'
+    #     state: latest
+
+    - name: Set up autoupdate.
+      yum:
+        name: dnf-automatic
+        state: present
+
+    - name: Ensure autoupdate are running.
+      service:
+        name: dnf-automatic-install.timer
+        state: started
+        enabled: true
+
+    - name: Firewall insttation.
+      package:
+        name: firewalld
+        state: present
+
+    - name: Configure ports in firewalld.
+      firewalld:
+        state: "{{ item.state }}"
+        port: "{{ item.port }}"
+        zone: external
+        immediate: true
+        permanent: true
+      with_items:
+        - { state: 'enabled', port: '2849/tcp' }
+        - { state: 'enabled', port: '123/udp' }
+
+    - name: Ensure firewalld is running.
+      service:
+        name: firewalld
+        state: started
+        enabled: true

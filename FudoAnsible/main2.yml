@@ -1,0 +1,51 @@
+---
+- hosts: fudojail
+  gather_facts: true
+
+  tasks:
+
+    # Raw command on fudojails
+    - name: Run cmmand to list jails
+      raw: fudojail list
+      register: fudojaillist
+
+    # Print facts
+    - name: PrintFact Run cmmand to list jails
+      debug: var=fudojaillist
+
+    # Set facts:
+    - name: set facts fudojaillist1
+      set_fact:
+        fudojaillistalllines: "{{ fudojaillist.stdout_lines[1] }}"
+
+    - name: print fudojaillist.stdout_lines
+      debug: var=fudojaillistalllines
+
+    # Warunek: Jeśli jest 'pmpierwszytestowy' w outpucie z fudojail list:
+    # Patrzę tylko na pierwszą linie, bo pracować to będzie na koncie testowym (I hope inaczej do zmiany)
+    - name: Use the variable in conditional statement
+      ansible.builtin.debug: 
+        msg: echo "motd contains the word pmpierwszytestowy"
+      when: fudojaillistalllines.find('pmpierwszytestowy') != -1
+
+    # - name: Use the variable in conditional statement
+    #   ansible.builtin.shell: echo "fudojail list contain pmpierwszytestowy - sucess!"
+    #   when: fudojaillistgrep.stdout_lines.find('pmpierwszytestowy') != -1
+
+    # - name: Condition for set_facts about fudojaillistgrep
+    #   set_fact:
+    #     grepowanie: true
+    #   when: fudojaillistgrep != 0
+
+    # - name: print condition effects
+    #   debug: var=grepowanie
+
+    # - name: print fudojail list | grep pmpierwszytestowy
+    #   debug:
+    #     var: fudojaillistgrep
+
+    #  Wazne, zapisywanie na maszynie lokalnej
+    # - local_action:
+    #     module: copy
+    #     content: "{{ fudojaillist.stdout_lines }}"
+    #     dest: testinventory.yml

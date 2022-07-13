@@ -1,0 +1,20 @@
+---
+- name: Generowanie klucza prywatnego oraz certyfikatu na jego podstawie pod eksport konfiguracji Fudo.
+  hosts: localhost
+  tasks:
+
+    - name: generate private_key_file.key
+      shell: openssl genrsa -out private_key_file.key 8192
+      args:
+        executable: /bin/zsh
+        chdir: /Users/przemyslawmajdanski/Documents/DevOps/Ansible/FudoAnsible
+
+    - name: generate cert file
+      shell: openssl req -x509 -new -subj "/emailAddress=support@wheelsystems.com" -key private_key_file.key -out certificate_file.crt
+      args:
+        executable: /bin/zsh
+        chdir: /Users/przemyslawmajdanski/Documents/DevOps/Ansible/FudoAnsible
+
+  # - name: Copy masterkey from old fudo
+  #   raw: sshpass -P ':' -p root scp -P 65522 -r root@10.0.23.144:/data/local/masterkey/ /Users/przemyslawmajdanski/Documents/DevOps/Ansible/FudoAnsible/
+

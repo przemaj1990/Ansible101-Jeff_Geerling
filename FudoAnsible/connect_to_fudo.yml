@@ -1,0 +1,17 @@
+---
+- hosts: forcopy
+  gather_facts: no
+
+  tasks:
+
+    - name: Raw command to run on fudo
+      raw: date
+      register: date1
+
+    - set_fact:
+        date11: "{{ date1.stdout }}"
+
+    - name: PrintFact date11
+      debug: var=date11
+
+  

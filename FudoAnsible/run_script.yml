@@ -1,0 +1,24 @@
+---
+- hosts: localhost
+  gather_facts: true
+  tasks:
+
+  - name: Run script on localhost
+    shell: sshpass -P ':' -p root scp -P 65522 -r root@10.0.23.144:/data/local/masterkey/ /Users/przemyslawmajdanski/Documents/DevOps/Ansible/FudoAnsible/
+    args:
+        executable: /bin/zsh
+        chdir: /Users/przemyslawmajdanski/Documents/DevOps/Ansible/FudoAnsible
+
+#   - name: Run script on localhost
+#     raw: sshpass -P ':' -p root scp -P 65522 -r root@10.0.23.144:/data/local/masterkey/ /Users/przemyslawmajdanski/Documents/DevOps/Ansible/FudoAnsible/
+
+#   - name: Run script on localhost
+#     shell: sh shell_script_sshpass.sh
+#     args:
+#         executable: /bin/zsh
+#         chdir: /Users/przemyslawmajdanski/Documents/DevOps/Ansible/FudoAnsible
+
+# working command: ansible localhost -m raw -a "sh /Users/przemyslawmajdanski/Documents/DevOps/Ansible/FudoAnsible/shell_script_sshpass.sh"
+
+    # - name: Raw command to run on fudo
+    #   raw: sh /Users/przemyslawmajdanski/Documents/DevOps/Ansible/FudoAnsible/shell_script_sshpass.sh

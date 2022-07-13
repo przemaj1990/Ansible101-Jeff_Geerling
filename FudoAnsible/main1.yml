@@ -1,0 +1,40 @@
+---
+- hosts: fudojail
+  gather_facts: true
+
+  tasks:
+
+    - name: Raw command to list jails
+      raw: fudojail list
+      register: list1
+
+    - set_fact:
+        list11: "{{ list1.stdout }}"
+
+    - set_fact:
+        list2: "{{ list1.stdout_lines[3] }}"
+
+    - set_fact:
+        list3: "{{ list1.stdout_lines | list }}"
+    
+    # - name: PrintFact list1.stdout_lines | list
+    #   debug: var=list3
+
+    - name: PrintFact list1.stdout_lines[3]
+      debug: var=list2
+    
+    - name: PrintFact list1.stdout_lines[3]
+      debug: var=list11
+
+    # - name: PrintBasefacts list1.stdout_lines
+    #   debug: var=list1.stdout_lines
+
+    # - name: Debug2
+    #   debug: var=list.stdout
+
+    # - name: Debug3-all withour parse
+    #   debug: msg="The variable is {{ list }}"
+
+    # - name: Print all available facts
+    #   ansible.builtin.debug:
+    #     var: ansible_facts

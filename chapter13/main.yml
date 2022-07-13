@@ -1,0 +1,10 @@
+---
+- hosts: all
+
+  vars:
+    my_color_choice: 'red'
+
+  tasks:
+    - name: "Verify  {{ my_color_choice }}  is {{ red }}"
+      assert:
+        that: my_color_choice is local.colors.red
