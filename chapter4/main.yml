@@ -1,0 +1,53 @@
+---
+- hosts: ec2
+  become: true
+
+  vars_files:
+  - vars.yml
+  
+  #as this is common problem:
+  pre_tasks:
+    - name: Update apt cache if needed.
+      apt: update_cache=true cache_valid_time=3
+
+#   handlers:
+#     - name: Restart solr
+#       service: name=solr state=restarted
+
+#   tasks:
+#     - name: Change config.
+#       command: something to change config
+#       notify: restart solr
+
+  tasks:
+    - name: Install Java.
+      apt: name=openjdk-8-jdk state=present
+
+    - name: Download solr. 
+      get_url: 
+        url: "https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz"
+        dest: "{{ download_dir }}/solr-{{ solr_version }}.tgz"
+        checksum: "{{ solr_checksum }}"
+
+    - name: Expand solr.
+      unarchive:
+        src: "{{ download_dir }}/solr-{{ solr_version }}.tgz"
+        dest: "{{ download_dir }}"
+        # if you have archive on remote servers and would like to not donwload it.
+        remote_src: true
+        # creates allow to ensure if this file is therem and if yes, we will not repeat this steps again.
+        creates: "{{ download_dir }}/solr-{{ solr_version }}/README.txt"
+
+    - name: Run solr script.
+      command: >
+        {{ download_dir }}/solr-{{ solr_version }}/bin/install_solr_service.sh
+        {{ download_dir }}/solr-{{ solr_version }}.tgz
+        -i /opt
+        -d /var/solr
+        -u solr
+        -s solr
+        -p 8983
+        creates={{ solr_dir }}/bin/solr
+
+    - name: Ensure solr is started and enabled on boot.
+      service: name=solr state=started enabled=yes

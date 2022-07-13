@@ -1,0 +1,18 @@
+---
+
+- name: Insstall Apache task.
+  package:
+    name: "{{ apache_package }}"
+    state: present
+
+- name: Copy test config file.
+  copy:
+    src: files/test.conf
+    dest: "{{ appache_config_dir }}/test.conf"
+  notify: restart appache
+
+- name: Ensure Apache is running and starts at boot.
+  service:
+    name: "{{ apache_package }}"
+    state: started
+    enabled: true

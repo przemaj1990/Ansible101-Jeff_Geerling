@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Check uptime.
+      command: uptime
+      register: system_uptime
+
+    - name: Print uptime.
+      debug: 
+        var: system_uptime.stdout
+
+  handlers:
+    - name: Print a message if a comand resulted in a change.
+      debug:
+        msg: "comand result in change!"
+      when: system_uptime is changed

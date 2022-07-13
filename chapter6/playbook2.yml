@@ -1,0 +1,40 @@
+---
+- name: Install Apache.
+  hosts: all
+  become: true
+  gather_facts: yes
+
+  handlers:
+    - import_tasks: handlers/apache.yml
+
+# Approche when you have more than 1 os family:
+
+  pre_tasks:
+    - debug: var=ansible_os_family
+    - name: Load variable files.
+      include_vars: "{{ item }}"
+      with_first_found:
+        - "vars/apache_{{ ansible_os_family }}.yml"
+        - "vars/apache_default.yml"
+
+  tasks:
+    # you can use improt task to overwrite variable used in this tasks using below consturction:
+    - import_tasks: tasks/apache.yml
+    #   vars:
+    #     apache_package: apache3
+
+    # allow to dynamically changing tasks using include:
+    # - include_tasks: tasks/log.yml
+
+    # - name: Check for existing log files in dynamig log_file_paths variable.
+    #   find:
+    #     paths: "{{ item }}"
+    #     patterns: '*.log'
+    #   register: found_log_file_paths
+    #   with_items: "{{ found_log_file_paths }}"
+
+    # You can also import whole playbooks:
+
+- import_playbook: playbook3.yml
+
+

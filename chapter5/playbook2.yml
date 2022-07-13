@@ -1,0 +1,69 @@
+---
+- name: Install Apache.
+  hosts: all
+  become: true
+  gather_facts: yes
+
+  handlers:
+    - name: restart appache
+      service:
+        name: "{{ apache_service }}"
+        state: restarted
+
+# Approche when you have more than 1 os family:
+
+  pre_tasks:
+    - debug: var=ansible_os_family
+    - name: Load variable files.
+      include_vars: "{{ item }}"
+      with_first_found:
+        - "vars/apache_{{ ansible_os_family }}.yml"
+        - "vars/apache_default.yml"
+
+  tasks:
+
+    - name: Ensure Apache is running and starts at boot.
+      service:
+        name: "{{ apache_package }}"
+        state: started
+        enabled: true
+      register: foo
+
+    # - debug: var=foo.state
+    # - debug: var=foo['status']
+    # - debug: var=foo['status']['After']
+  
+    - name: Download a file.
+      get_url:
+        url: http://ipv4.download.thinkbroadband.com/20MB.zip
+        dest: /tmp
+
+    - name: Insstall Apache task.
+      package:
+        name: "{{ apache_package }}"
+        state: present
+
+    - name: Copy test config file.
+      copy:
+        src: files/test.conf
+        dest: "{{ appache_config_dir }}/test.conf"
+      notify: restart appache
+
+    # If you would like to triger fail 
+    # - fail:
+
+    # - name: Get the install apache version
+    #   command: 'httpd -v'
+    #   register: version
+    
+    # - name: Remove Apache server from Ubuntu.
+    #   apt:
+    #     name: httpd
+    #     state: absent
+    #     update_cache: yes
+
+    # - name: Remove unwanted Apache2 packages from the system.
+    #   apt:
+    #     autoremove: yes
+    #     purge: yes
+

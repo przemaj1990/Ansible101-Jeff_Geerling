@@ -1,0 +1,3 @@
+---
+# this variable should be encrypted
+myapp_api_key: "key"

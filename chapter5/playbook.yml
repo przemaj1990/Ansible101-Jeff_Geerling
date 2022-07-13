@@ -1,0 +1,101 @@
+---
+- name: Install Apache.
+  hosts: all
+  become: true
+  gather_facts: yes
+
+  
+  # variable for specific play inside tasks
+  # vars:
+  #   proxy_vars:
+  #     http_proxy: http://example-proxy.com:8080/
+  # or you can use for all task setup env:
+  # enviroments:
+  #   http_proxy: http://example-proxy.com:8080/
+
+  # Vars defiled in playbook:
+  vars:
+    key: value
+  # Vars defined in seperate file:
+  vars_files:
+    - vars/vars1.yml
+
+  handlers:
+    - name: restart appache
+      service:
+        name: httpd
+        state: restarted
+      # notify: restart memcached
+
+    # - name: restart memcached
+    #   service:
+    #     name: memcached
+    #     state: restarted
+
+  tasks:
+    # to setup env variable:
+    - name: Add an enviroments variable to the remote users shell.
+      lineinfile:
+        # dest: "etc/enviroment"
+        dest: "~/.bash_profile"
+        regexp: '^ENV_VAR= '
+        line: 'ENV_VAR=value'
+      become: false
+  
+    - name: Download a file.
+      get_url:
+        url: http://ipv4.download.thinkbroadband.com/20MB.zip
+        dest: /tmp
+      # point vars below:
+      # enviroment: proxy_vars
+      # or to setup proxy inside task:
+      # enviroment:
+      #   http_proxy: http://example-proxy.com:8080/
+
+    - name: Get the value of an enviroment variable.
+      shell: 'source ~/.bash_profile && echo $ENV_VAR'
+      register: foo
+
+    - name: Debug
+      debug: msg="The variable is {{ foo.stdout }}"
+
+    - name: Insstall Apache task.
+      yum:
+        name: httpd
+        state: present
+
+    - name: Copy test config file.
+      copy:
+        src: files/test.conf
+        dest: /etc/httpd/conf.d/test.conf
+      notify: restart appache
+
+    #  Run all handlers at onece. 
+    # - name: Make sure handler are flush imediately.
+    #   meta: flush_handlers
+
+    
+    - name: Ensure Apache is running and starts at boot.
+      service:
+        name: httpd
+        state: started
+        enabled: true
+
+    # If you would like to triger fail 
+    # - fail:
+
+    # - name: Get the install apache version
+    #   command: 'httpd -v'
+    #   register: version
+    
+    # - name: Remove Apache server from Ubuntu.
+    #   apt:
+    #     name: httpd
+    #     state: absent
+    #     update_cache: yes
+
+    # - name: Remove unwanted Apache2 packages from the system.
+    #   apt:
+    #     autoremove: yes
+    #     purge: yes
+

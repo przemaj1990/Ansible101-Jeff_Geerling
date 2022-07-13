@@ -1,0 +1,6 @@
+---
+
+- name: restart appache
+  service:
+    name: "{{ apache_service }}"
+    state: restarted
